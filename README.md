@@ -18,7 +18,7 @@ The application continues to use the LLM for natural-language understanding, str
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 
-------------------------------- AIVOA AI-First HCP CRM -------------------------------
+------------------------------------------------------------------------------------------------------------- ## AIVOA AI-First HCP CRM -------------------------------------------------------------------------------------------------------------------------------
 
 An AI-first Customer Relationship Management module designed for life-sciences field representatives to log, modify, enrich, and save Healthcare Professional (HCP) interactions through natural-language conversation.
 
@@ -68,7 +68,7 @@ The agent also supports contextual corrections, material additions, follow-up sc
 
 The AI agent uses five specialized tools.
 
-### 1. `log_interaction`
+## 1. `log_interaction`
 
 Extracts structured CRM information from a natural-language interaction description.
 
@@ -85,7 +85,7 @@ Supported information includes:
 - outcomes
 - follow-up actions
 
-### 2. `edit_interaction`
+## 2. `edit_interaction`
 
 Updates only the fields explicitly corrected by the user while preserving the remaining interaction state.
 
@@ -93,7 +93,7 @@ Example:
 
 > "The HCP was actually Dr. John and the sentiment was negative."
 
-### 3. `add_material`
+## 3. `add_material`
 
 Adds additional materials to the current interaction without overwriting previously recorded materials.
 
@@ -101,7 +101,7 @@ Example:
 
 > "Also add the Phase III clinical study report."
 
-### 4. `schedule_follow_up`
+## 4. `schedule_follow_up`
 
 Creates follow-up actions from natural-language requests.
 
@@ -111,7 +111,7 @@ Example:
 
 > "Schedule a follow-up meeting next Monday to discuss treatment outcomes."
 
-### 5. `save_interaction`
+## 5. `save_interaction`
 
 Persists the completed interaction to the MySQL database only after an explicit save request.
 
@@ -162,7 +162,7 @@ LangGraph Tools
 MySQL Database
 ```
 
-####Tech Stack####
+##Tech Stack
 
 >>>>> Frontend <<<<<
 
@@ -230,7 +230,7 @@ The LLM is responsible for natural-language understanding, structured extraction
 
 Deterministic application logic is used where predictable computation is preferable, such as resolving relative calendar dates.
 
-PROJECT STRUCTURE:
+## PROJECT STRUCTURE:
 ```
 AIVOA-HCP-CRM/
 |
@@ -280,7 +280,7 @@ AIVOA-HCP-CRM/
 `-- README.md
 ```
 
-## Local Setup ##
+## Local Setup 
 Prerequisites
 
 Ensure the following are installed:
@@ -292,32 +292,32 @@ Ensure the following are installed:
 
 >>>>>>> Backend Setup <<<<<<<
 
-Navigate to the backend directory:
+> Navigate to the backend directory:
 ```
 cd backend
 ```
-Create a Python virtual environment:
+> Create a Python virtual environment:
 ```
 python -m venv venv
 ```
-Activate it.
+> Activate it.
 
-Windows:
+> Windows:
 ```
 venv\Scripts\activate
 ```
-Install dependencies:
+> Install dependencies:
 ```
 pip install -r requirements.txt
 ```
-Create a .env file inside the backend directory.
+> Create a .env file inside the backend directory.
 ```
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=llama-3.3-70b-versatile
 
 DATABASE_URL=mysql+pymysql://username:password@localhost:3306/aivoa_hcp_crm
 ````
-Start the backend:
+> Start the backend:
 ```
 uvicorn app.main:app --reload
 
@@ -327,21 +327,21 @@ Interactive API documentation is available at /docs.
 ```
 >>>>>>> Frontend Setup <<<<<<<
 
-Navigate to the frontend directory:
+> Navigate to the frontend directory:
 ```
 cd frontend
 ```
-Install dependencies:
+> Install dependencies:
 ```
 npm install
 ```
-Start the development server:
+> Start the development server:
 ```
 npm run dev
 ```
-The frontend runs on port 5173 by default.
+> The frontend runs on port 5173 by default.
 
-#### Example End-to-End Interaction ####
+## Example End-to-End Interaction 
 
 --> Step 1 — Log Interaction
 
@@ -364,7 +364,7 @@ The frontend runs on port 5173 by default.
 "Everything looks correct. Save this interaction."
 
 
-### API Endpoints ###
+## API Endpoints 
 ```
 | Method | Endpoint    | Description                                     |
 | ------ | ----------- | ----------------------------------------------- |
@@ -372,7 +372,7 @@ The frontend runs on port 5173 by default.
 | GET    | `/health`   | Application health check                        |
 | POST   | `/api/chat` | Process conversational HCP interaction requests |
 ```
-### Design Decisions ###
+## Design Decisions 
 
 ---> Why LangGraph?
 
@@ -391,14 +391,14 @@ The frontend runs on port 5173 by default.
 
   Interaction data is persisted only when the user explicitly requests it, preventing incomplete conversations from automatically creating database records.
   
-### Security ###
+## Security 
 
 --> API credentials are loaded through environment variables.
 --> .env files are excluded from version control.
 --> Database credentials are not committed to the repository.
 --> AI interactions are processed through the backend rather than exposing API credentials in the frontend.
 
-### Future Enhancements ###
+## Future Enhancements 
 
 ---> HCP directory search and autocomplete
 ---> Voice-note transcription with explicit consent
