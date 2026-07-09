@@ -1,5 +1,13 @@
+Author
 
-# AIVOA AI-First HCP CRM
+Shyam A
+
+Full Stack Developer
+
+Built as a technical assignment demonstrating an AI-first HCP CRM workflow using React, Redux, FastAPI, LangGraph, Groq, and MySQL.
+
+
+## AIVOA AI-First HCP CRM
 
 An AI-first Customer Relationship Management module designed for life-sciences field representatives to log, modify, enrich, and save Healthcare Professional (HCP) interactions through natural-language conversation.
 
@@ -100,6 +108,9 @@ Example:
 
 > "Everything looks correct. Save this interaction."
 
+
+                    
+
 ---
 
 ## Architecture
@@ -138,3 +149,250 @@ LangGraph Tools
   |
   v
 MySQL Database
+```
+
+####Tech Stack####
+
+>>>>> Frontend <<<<<
+
+> React
+> Vite
+> Redux Toolkit
+> React Redux
+> Axios
+> Lucide React
+> Google Inter
+
+
+>>>>> Backend <<<<<
+
+> Python
+> FastAPI
+> Uvicorn
+> Pydantic
+> SQLAlchemy
+> PyMySQL
+
+ 
+ >>>>> AI Agent <<<<<
+
+> LangGraph
+> LangChain
+> Groq
+> LLM tool calling
+
+>>>>> Database <<<<<
+
+> MySQL
+
+>>> AI Agent Workflow <<<
+```
+Natural-language request
+        |
+        v
+Groq LLM
+        |
+        v
+Intent and entity understanding
+        |
+        v
+LangGraph tool selection
+        |
+        v
+Selected tool execution
+        |
+        v
+Interaction state update
+        |
+        v
+Redux synchronizes the CRM form
+        |
+        v
+Explicit save request
+        |
+        v
+MySQL persistence
+```
+The LLM is responsible for natural-language understanding, structured extraction, and tool selection.
+
+Deterministic application logic is used where predictable computation is preferable, such as resolving relative calendar dates.
+
+PROJECT STRUCTURE:
+```
+AIVOA-HCP-CRM/
+|
+|-- backend/
+|   |-- app/
+|   |   |-- agents/
+|   |   |   |-- graph.py
+|   |   |   `-- state.py
+|   |   |
+|   |   |-- api/
+|   |   |   `-- routes.py
+|   |   |
+|   |   |-- database/
+|   |   |   |-- database.py
+|   |   |   `-- models.py
+|   |   |
+|   |   |-- schemas/
+|   |   |   `-- interaction.py
+|   |   |
+|   |   |-- tools/
+|   |   |   `-- interaction_tools.py
+|   |   |
+|   |   `-- main.py
+|   |
+|   `-- requirements.txt
+|
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |   |-- AIAssistant.jsx
+|   |   |   `-- InteractionForm.jsx
+|   |   |
+|   |   |-- services/
+|   |   |   `-- api.js
+|   |   |
+|   |   |-- store/
+|   |   |   |-- interactionSlice.js
+|   |   |   `-- store.js
+|   |   |
+|   |   |-- App.jsx
+|   |   `-- main.jsx
+|   |
+|   |-- package.json
+|   `-- vite.config.js
+|
+|-- .gitignore
+`-- README.md
+```
+
+## Local Setup ##
+Prerequisites
+
+Ensure the following are installed:
+
+> Node.js
+> Python 3.12+
+> MySQL
+> Git
+
+>>>>>>> Backend Setup <<<<<<<
+
+Navigate to the backend directory:
+```
+cd backend
+```
+Create a Python virtual environment:
+```
+python -m venv venv
+```
+Activate it.
+
+Windows:
+```
+venv\Scripts\activate
+```
+Install dependencies:
+```
+pip install -r requirements.txt
+```
+Create a .env file inside the backend directory.
+```
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.3-70b-versatile
+
+DATABASE_URL=mysql+pymysql://username:password@localhost:3306/aivoa_hcp_crm
+````
+Start the backend:
+```
+uvicorn app.main:app --reload
+
+The API runs on port 8000.
+
+Interactive API documentation is available at /docs.
+```
+>>>>>>> Frontend Setup <<<<<<<
+
+Navigate to the frontend directory:
+```
+cd frontend
+```
+Install dependencies:
+```
+npm install
+```
+Start the development server:
+```
+npm run dev
+```
+The frontend runs on port 5173 by default.
+
+#### Example End-to-End Interaction ####
+
+--> Step 1 — Log Interaction
+
+"Had a meeting with Dr. Ananya Rao today along with Mr. Karthik. We discussed CardioX safety concerns and dosage adherence. The sentiment was positive and I shared a product brochure and Phase III clinical study report."
+
+--> Step 2 — Edit Interaction
+
+"The HCP was actually Dr. Ananya Reddy and the sentiment was neutral. Keep everything else unchanged."
+
+--> Step 3 — Add Material
+
+"Add the CardioX dosage guide to the materials shared."
+
+--> Step 4 — Schedule Follow-Up
+
+"Schedule a follow-up meeting next Tuesday to discuss treatment outcomes and adherence concerns."
+
+--> Step 5 — Save Interaction
+
+"Everything looks correct. Save this interaction."
+
+
+### API Endpoints ###
+```
+| Method | Endpoint    | Description                                     |
+| ------ | ----------- | ----------------------------------------------- |
+| GET    | `/`         | API status                                      |
+| GET    | `/health`   | Application health check                        |
+| POST   | `/api/chat` | Process conversational HCP interaction requests |
+```
+### Design Decisions ###
+
+---> Why LangGraph?
+
+  LangGraph provides explicit agent workflow orchestration and structured state management while allowing the LLM to perform intent recognition and tool selection.
+
+---> Why Redux?
+
+  Redux Toolkit provides centralized interaction state management, allowing AI-generated structured data to immediately synchronize with the CRM form.
+
+---> Why Deterministic Date Resolution?
+
+  LLMs are effective at natural-language understanding but should not be exclusively trusted for calendar arithmetic.
+  The application therefore combines LLM reasoning with deterministic Python date calculations for relative dates.
+
+---> Why Explicit Save?
+
+  Interaction data is persisted only when the user explicitly requests it, preventing incomplete conversations from automatically creating database records.
+  
+### Security ###
+
+--> API credentials are loaded through environment variables.
+--> .env files are excluded from version control.
+--> Database credentials are not committed to the repository.
+--> AI interactions are processed through the backend rather than exposing API credentials in the frontend.
+
+### Future Enhancements ###
+
+---> HCP directory search and autocomplete
+---> Voice-note transcription with explicit consent
+---> CRM authentication and role-based access control
+---> Audit trails for AI-generated modifications
+---> Human confirmation before persistence
+---> Advanced pharmaceutical compliance validation
+---> Containerized deployment
+---> Automated testing and CI/CD
+
