@@ -17,8 +17,7 @@ To maintain a fully functional implementation using the required Groq and LangGr
 The application continues to use the LLM for natural-language understanding, structured data extraction, contextual interaction updates, and LangGraph tool selection. Deterministic application logic is used only where predictable computation is required, such as relative-date resolution.
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-
--------------------------------------------------------------- ## AIVOA AI-First HCP CRM --------------------------------------------------------------
+## AIVOA AI-First HCP CRM 
 
 An AI-first Customer Relationship Management module designed for life-sciences field representatives to log, modify, enrich, and save Healthcare Professional (HCP) interactions through natural-language conversation.
 
