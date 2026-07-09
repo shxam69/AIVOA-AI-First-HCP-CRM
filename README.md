@@ -5,9 +5,20 @@ Shyam A
 Full Stack Developer
 
 Built as a technical assignment demonstrating an AI-first HCP CRM workflow using React, Redux, FastAPI, LangGraph, Groq, and MySQL.
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+## LLM Model Compatibility Note
+
+The original assignment specification references Groq's `gemma2-9b-it` model and also mentions `llama-3.3-70b-versatile` for context.
+
+During development, `gemma2-9b-it` was tested directly through the Groq API. Groq returned a `model_decommissioned` response, confirming that the specified model is no longer supported by the platform.
+
+To maintain a fully functional implementation using the required Groq and LangGraph stack, this project uses `llama-3.3-70b-versatile`, which is also referenced in the assignment specification.
+
+The application continues to use the LLM for natural-language understanding, structured data extraction, contextual interaction updates, and LangGraph tool selection. Deterministic application logic is used only where predictable computation is required, such as relative-date resolution.
+_______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 
-## AIVOA AI-First HCP CRM
+------------------------------- AIVOA AI-First HCP CRM -------------------------------
 
 An AI-first Customer Relationship Management module designed for life-sciences field representatives to log, modify, enrich, and save Healthcare Professional (HCP) interactions through natural-language conversation.
 
@@ -179,7 +190,9 @@ MySQL Database
 > LangGraph
 > LangChain
 > Groq
+`llama-3.3-70b-versatile`
 > LLM tool calling
+> Deterministic relative-date resolution
 
 >>>>> Database <<<<<
 
