@@ -1,8 +1,8 @@
-Author
+## Author
 
-Shyam A
+## Shyam A
 
-Full Stack Developer
+## Full Stack Developer
 
 Built as a technical assignment demonstrating an AI-first HCP CRM workflow using React, Redux, FastAPI, LangGraph, Groq, and MySQL.
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
