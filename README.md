@@ -18,7 +18,7 @@ The application continues to use the LLM for natural-language understanding, str
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 
---------------------------------------------------------------------------------------- ## AIVOA AI-First HCP CRM --------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------- ## AIVOA AI-First HCP CRM --------------------------------------------------------------
 
 An AI-first Customer Relationship Management module designed for life-sciences field representatives to log, modify, enrich, and save Healthcare Professional (HCP) interactions through natural-language conversation.
 
