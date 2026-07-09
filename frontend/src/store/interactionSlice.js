@@ -56,10 +56,26 @@ const interactionSlice = createSlice({
     error: null,
   },
 
-  reducers: {},
+  reducers: {
+  resetInteraction: (state) => {
+    state.formData = { ...initialInteraction };
+    state.messages = [
+      {
+        role: "assistant",
+        content:
+          "Ready for a new HCP interaction. Describe your meeting naturally and I’ll structure the CRM details.",
+      },
+    ];
+    state.activeTool = "";
+    state.savedInteractionId = null;
+    state.loading = false;
+    state.error = null;
+  },
+},
 
   extraReducers: (builder) => {
     builder
+    
       .addCase(sendChatMessage.pending, (state, action) => {
         state.loading = true;
         state.error = null;
@@ -83,9 +99,11 @@ const interactionSlice = createSlice({
           action.payload.saved_interaction_id;
 
         state.messages.push({
-          role: "assistant",
-          content: action.payload.reply,
-        });
+  role: "assistant",
+  content: action.payload.reply,
+  tool: action.payload.active_tool,
+  savedInteractionId: action.payload.saved_interaction_id,
+});
       })
 
       .addCase(sendChatMessage.rejected, (state, action) => {
@@ -102,5 +120,6 @@ const interactionSlice = createSlice({
       });
   },
 });
+export const { resetInteraction } = interactionSlice.actions;
 
 export default interactionSlice.reducer;

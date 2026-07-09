@@ -137,14 +137,25 @@ def tool_node(state: AgentState) -> Dict[str, Any]:
             )
             tool_args = complete_data
 
-        # Resolve relative dates deterministically from the original
-        # user message instead of trusting LLM calendar arithmetic.
-        if tool_name == "schedule_follow_up":
+        # Deterministic date resolution for follow-up actions
+        if "follow_up_actions" in tool_args and tool_args["follow_up_actions"]:
             original_message = _latest_human_message(state["messages"])
-            resolved_follow_up = resolve_relative_weekday(original_message)
+            resolved_msg = resolve_relative_weekday(original_message)
 
-            if resolved_follow_up != original_message:
-                tool_args["follow_up_actions"] = resolved_follow_up
+            if resolved_msg != original_message:
+                import re
+                resolved_dates = re.findall(r"\d{4}-\d{2}-\d{2}", resolved_msg)
+                if resolved_dates:
+                    correct_date = max(resolved_dates)
+                    current_action = tool_args["follow_up_actions"]
+                    
+                    if re.search(r"\d{4}-\d{2}-\d{2}", current_action):
+                        current_action = re.sub(r"\d{4}-\d{2}-\d{2}", correct_date, current_action)
+                    else:
+                        current_action = resolve_relative_weekday(current_action)
+                        
+                    tool_args["follow_up_actions"] = current_action
+        
 
         selected_tool = tools_by_name[tool_name]
         result = selected_tool.invoke(tool_args)
