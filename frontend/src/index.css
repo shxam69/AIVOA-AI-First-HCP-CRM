@@ -644,6 +644,7 @@ button {
    ========================================================= */
 
 :root {
+  color-scheme: light;
   --app-bg: #eef2f7;
   --panel-bg: rgba(255, 255, 255, 0.82);
   --panel-solid: #ffffff;
@@ -669,6 +670,7 @@ button {
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --app-bg: #090d14;
   --panel-bg: rgba(17, 24, 39, 0.82);
   --panel-solid: #111827;
@@ -826,7 +828,7 @@ select {
 
 /* Glass panel foundation */
 
-.interaction-form,
+.interaction-panel,
 .assistant-panel {
   border: 1px solid var(--border-primary);
   background: var(--panel-bg);
@@ -887,7 +889,7 @@ select {
 
 /* Theme compatibility */
 
-.interaction-form,
+.interaction-panel,
 .assistant-panel,
 .assistant-header,
 .prompt-suggestions,
@@ -899,19 +901,48 @@ select {
   color: var(--text-primary);
 }
 
-.interaction-form input,
-.interaction-form textarea,
-.interaction-form select,
+.interaction-panel input,
+.interaction-panel textarea,
+.interaction-panel select,
 .chat-input-area textarea {
   color: var(--text-primary);
   border-color: var(--border-primary);
   background: var(--panel-secondary);
 }
 
-.interaction-form input::placeholder,
-.interaction-form textarea::placeholder,
+.interaction-panel input::placeholder,
+.interaction-panel textarea::placeholder,
 .chat-input-area textarea::placeholder {
   color: var(--text-muted);
+}
+
+.interaction-panel .panel-header {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-primary);
+}
+
+.interaction-panel label,
+.interaction-panel .form-content h3,
+.interaction-panel .material-row strong,
+.interaction-panel .sentiment-options label,
+.interaction-panel .suggestions strong {
+  color: var(--text-primary);
+}
+
+.interaction-panel .material-box p,
+.interaction-panel .suggestions span {
+  color: var(--text-secondary);
+}
+
+.interaction-panel .fake-action,
+.interaction-panel .voice-button {
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+  background: var(--panel-secondary);
+}
+
+.interaction-panel .suggestions {
+  color: var(--accent);
 }
 
 .assistant-intro {

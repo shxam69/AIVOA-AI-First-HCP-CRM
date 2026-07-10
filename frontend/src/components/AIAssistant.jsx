@@ -101,6 +101,7 @@ function AIAssistant() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
+  const recognitionActiveRef = useRef(false);
   const baseMessageRef = useRef("");
 
   const dispatch = useDispatch();
@@ -160,11 +161,13 @@ function AIAssistant() {
     };
 
     recognition.onend = () => {
+      recognitionActiveRef.current = false;
       setIsListening(false);
     };
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
+      recognitionActiveRef.current = false;
       setIsListening(false);
     };
 
@@ -184,6 +187,7 @@ function AIAssistant() {
     recognitionRef.current = recognition;
 
     return () => {
+      recognitionActiveRef.current = false;
       recognition.stop();
       recognitionRef.current = null;
     };
@@ -192,11 +196,23 @@ function AIAssistant() {
   const toggleVoiceInput = () => {
     if (!recognitionRef.current) return;
 
-    if (isListening) {
-      recognitionRef.current.stop();
+    if (isListening || recognitionActiveRef.current) {
+      recognitionActiveRef.current = false;
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error("Error stopping recognition:", e);
+      }
     } else {
       baseMessageRef.current = message;
-      recognitionRef.current.start();
+      recognitionActiveRef.current = true;
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error("Error starting recognition:", e);
+        recognitionActiveRef.current = false;
+        setIsListening(false);
+      }
     }
   };
 
