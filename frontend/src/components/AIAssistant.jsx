@@ -98,6 +98,8 @@ function AIAssistant() {
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
 
+  const [voiceError, setVoiceError] = useState(false);
+
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -158,6 +160,7 @@ function AIAssistant() {
 
     recognition.onstart = () => {
       setIsListening(true);
+      setVoiceError(false);
     };
 
     recognition.onend = () => {
@@ -169,6 +172,9 @@ function AIAssistant() {
       console.error("Speech recognition error:", event.error);
       recognitionActiveRef.current = false;
       setIsListening(false);
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        setVoiceError(true);
+      }
     };
 
     recognition.onresult = (event) => {
@@ -212,6 +218,7 @@ function AIAssistant() {
         console.error("Error starting recognition:", e);
         recognitionActiveRef.current = false;
         setIsListening(false);
+        setVoiceError(true);
       }
     }
   };
@@ -346,6 +353,12 @@ function AIAssistant() {
           ))}
         </div>
       </div>
+
+      {voiceError && (
+        <div style={{ color: "#ef4444", fontSize: "11px", padding: "8px 18px 0", textAlign: "center" }}>
+          Voice input is unavailable in this browser. Please use Chrome or Edge.
+        </div>
+      )}
 
       <form className="chat-input-area enhanced-input" onSubmit={handleSubmit}>
         {voiceSupported && (

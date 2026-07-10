@@ -693,6 +693,32 @@ button {
     0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+/* Enforce dark theme scoping explicitly on the permanently-dark assistant panel */
+.assistant-panel {
+  color-scheme: dark;
+  --app-bg: #090d14;
+  --panel-bg: rgba(17, 24, 39, 0.82);
+  --panel-solid: #111827;
+  --panel-secondary: #151d2a;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #a9b4c6;
+  --text-muted: #718096;
+
+  --border-primary: rgba(148, 163, 184, 0.18);
+  --border-secondary: rgba(148, 163, 184, 0.1);
+
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-soft: rgba(37, 99, 235, 0.14);
+  --accent-bg: var(--accent-soft);
+
+  --success: #4ade80;
+
+  --shadow-panel:
+    0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
 html,
 body,
 #root {
@@ -979,6 +1005,77 @@ select {
   background: var(--accent-soft);
 }
 
+/* Explicit internal color mapping for Assistant components */
+.chat-message.assistant {
+  color: var(--text-primary);
+  background: var(--panel-secondary);
+}
+
+.chat-message.user {
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.assistant-title svg,
+.assistant-title h2,
+.typing-dots i {
+  color: var(--accent);
+}
+
+.typing-dots i {
+  background: var(--accent);
+}
+
+.assistant-avatar,
+.intro-icon,
+.tool-card-icon,
+.processing-icon {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.ai-status {
+  color: var(--success);
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.2);
+}
+
+.status-dot {
+  background: var(--success);
+}
+
+.tool-card-check,
+.save-confirmation {
+  color: var(--success);
+}
+
+.tool-card-eyebrow,
+.suggestion-label,
+.processing-stages,
+.assistant-footer {
+  color: var(--text-muted);
+}
+
+.agent-status,
+.chat-message.processing {
+  color: var(--text-secondary);
+}
+
+.chat-input-area button.send-button {
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.agent-processing-card {
+  background: var(--panel-secondary);
+  border-color: var(--border-primary);
+}
+
+.assistant-intro strong,
+.agent-processing-card strong {
+  color: var(--text-primary);
+}
+
 /* Make messages feel more like a real messaging product */
 
 .message-group.user {
@@ -1103,7 +1200,6 @@ select {
   box-sizing: border-box;
 }
 
-.voice-button,
 .send-button {
   width: 42px;
   height: 42px;
@@ -1113,19 +1209,4 @@ select {
   justify-content: center;
   border-radius: 10px;
   cursor: pointer;
-}
-
-.voice-button.listening {
-  animation: voicePulse 1.4s ease-in-out infinite;
-}
-
-@keyframes voicePulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.08);
-  }
 }
