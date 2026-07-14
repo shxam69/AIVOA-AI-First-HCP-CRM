@@ -279,6 +279,35 @@ AIVOA-HCP-CRM/
 `-- README.md
 ```
 
+## Render Deployment
+
+This project ships with a `render.yaml` blueprint that configures both the backend (Python web service) and frontend (static site) automatically.
+
+### Steps
+
+1. Push this repository to GitHub.
+2. Go to [render.com](https://render.com), create a new **Blueprint** and connect your GitHub repo.
+3. Render will detect `render.yaml` and create both services.
+4. In the Render dashboard, set the following environment variables manually for each service:
+
+**Backend (`aivoa-backend`):**
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Your PostgreSQL connection string, e.g. `postgresql+psycopg2://user:pass@host/dbname` |
+| `GROQ_API_KEY` | Your Groq API key |
+| `FRONTEND_URL` | The Render URL of your frontend static site, e.g. `https://aivoa-frontend.onrender.com` |
+
+**Frontend (`aivoa-frontend`):**
+
+| Variable | Value |
+|---|---|
+| `VITE_API_BASE_URL` | Your backend service URL + `/api`, e.g. `https://aivoa-backend.onrender.com/api` |
+
+> **Database note:** Render's managed database offering is PostgreSQL. The app uses SQLAlchemy which works with both MySQL and PostgreSQL — just supply the correct `DATABASE_URL`. The `psycopg2-binary` driver is already included in `requirements.txt`.
+
+---
+
 ## Local Setup 
 Prerequisites
 
