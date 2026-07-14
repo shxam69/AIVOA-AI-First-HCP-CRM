@@ -20,7 +20,6 @@ app = FastAPI(
 )
 
 # CORS is only needed for local development (separate dev servers).
-# In production the frontend is served by FastAPI itself, so same origin.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -37,32 +36,28 @@ app.include_router(router)
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "healthy",
-        "database": "configured",
-    }
+    return {"status": "healthy", "database": "configured"}
 
 
 # ── Serve the React frontend ──────────────────────────────────────────────────
-# The built frontend lives at  <repo-root>/frontend/dist  which, relative to
-# this file (backend/app/main.py), is two levels up then into frontend/dist.
-_FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+# Render runs uvicorn from the repo root via  `cd backend && uvicorn ...`
+# so the working directory when the process starts is <repo>/backend.
+# frontend/dist is therefore one level up.
+_HERE = Path(__file__).resolve().parent          # backend/app
+_REPO_ROOT = _HERE.parents[1]                    # repo root
+_FRONTEND_DIST = _REPO_ROOT / "frontend" / "dist"
 
 if _FRONTEND_DIST.is_dir():
-    # Serve static assets (JS, CSS, images …)
-    app.mount(
-        "/assets",
-        StaticFiles(directory=_FRONTEND_DIST / "assets"),
-        name="assets",
-    )
+    _ASSETS = _FRONTEND_DIST / "assets"
+    if _ASSETS.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(_ASSETS)), name="assets")
 
     @app.get("/favicon.svg", include_in_schema=False)
     def favicon():
-        return FileResponse(_FRONTEND_DIST / "favicon.svg")
+        return FileResponse(str(_FRONTEND_DIST / "favicon.svg"))
 
-    # Catch-all: return index.html for any route not matched above so that
-    # React Router (client-side routing) works correctly.
+    # Catch-all: serve index.html for any path not matched above so that
+    # React client-side routing works correctly.
     @app.get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str):
-        index = _FRONTEND_DIST / "index.html"
-        return FileResponse(index)
+        return FileResponse(str(_FRONTEND_DIST / "index.html"))
