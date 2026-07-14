@@ -1,18 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Bot, CheckCircle2, Database, FileEdit, FilePlus2,
-  Mic, MicOff, PackagePlus, Plus, RotateCcw,
-  Send, Sparkles, WandSparkles,
+  Bot,
+  CheckCircle2,
+  Database,
+  FileEdit,
+  FilePlus2,
+  Mic,
+  MicOff,
+  PackagePlus,
+  Plus,
+  RotateCcw,
+  Send,
+  Sparkles,
+  WandSparkles,
 } from "lucide-react";
 import { resetInteraction, sendChatMessage } from "../store/interactionSlice";
 
 const TOOL_META = {
-  log_interaction:   { label: "Log Interaction",    desc: "CRM fields extracted and populated",          Icon: FilePlus2   },
-  edit_interaction:  { label: "Edit Interaction",   desc: "Selected fields updated, state preserved",    Icon: FileEdit    },
-  add_material:      { label: "Material Added",     desc: "Item appended to materials list",             Icon: PackagePlus },
-  schedule_follow_up:{ label: "Follow-up Scheduled",desc: "Action structured and dates resolved",        Icon: WandSparkles},
-  save_interaction:  { label: "Interaction Saved",  desc: "Record persisted to the database",            Icon: Database    },
+  log_interaction:    { label: "Log Interaction",     desc: "CRM fields extracted and populated",         Icon: FilePlus2    },
+  edit_interaction:   { label: "Edit Interaction",    desc: "Selected fields updated, state preserved",   Icon: FileEdit     },
+  add_material:       { label: "Material Added",      desc: "Item appended to materials list",            Icon: PackagePlus  },
+  schedule_follow_up: { label: "Follow-up Scheduled", desc: "Action structured and dates resolved",       Icon: WandSparkles },
+  save_interaction:   { label: "Interaction Saved",   desc: "Record persisted to the database",           Icon: Database     },
 };
 
 const QUICK_ACTIONS = [
@@ -29,7 +39,9 @@ function ToolResult({ tool, savedId }) {
   const { Icon, label, desc } = meta;
   return (
     <div className="tool-result">
-      <div className="tool-result-icon"><Icon size={14} /></div>
+      <div className="tool-result-icon">
+        <Icon size={14} />
+      </div>
       <div className="tool-result-body">
         <div className="tool-result-eyebrow">LangGraph · Tool Executed</div>
         <div className="tool-result-name">{label}</div>
@@ -52,11 +64,11 @@ export default function AIAssistant() {
   const [voiceOk, setVoiceOk] = useState(true);
   const [voiceErr, setVoiceErr] = useState(false);
 
-  const bottomRef  = useRef(null);
-  const areaRef    = useRef(null);
-  const recogRef   = useRef(null);
-  const recogActive= useRef(false);
-  const baseMsg    = useRef("");
+  const bottomRef   = useRef(null);
+  const areaRef     = useRef(null);
+  const recogRef    = useRef(null);
+  const recogActive = useRef(false);
+  const baseMsg     = useRef("");
 
   const dispatch = useDispatch();
   const { messages, loading } = useSelector((s) => s.interaction);
@@ -81,12 +93,15 @@ export default function AIAssistant() {
     if (!SR) { setVoiceOk(false); return; }
 
     const r = new SR();
-    r.continuous = false; r.interimResults = true; r.lang = "en-IN";
+    r.continuous = false;
+    r.interimResults = true;
+    r.lang = "en-IN";
 
     r.onstart  = () => { setListening(true);  setVoiceErr(false); };
     r.onend    = () => { recogActive.current = false; setListening(false); };
     r.onerror  = (e) => {
-      recogActive.current = false; setListening(false);
+      recogActive.current = false;
+      setListening(false);
       if (e.error !== "no-speech" && e.error !== "aborted") setVoiceErr(true);
     };
     r.onresult = (e) => {
@@ -97,7 +112,11 @@ export default function AIAssistant() {
     };
 
     recogRef.current = r;
-    return () => { recogActive.current = false; r.stop(); recogRef.current = null; };
+    return () => {
+      recogActive.current = false;
+      r.stop();
+      recogRef.current = null;
+    };
   }, []);
 
   const toggleMic = () => {
@@ -121,7 +140,10 @@ export default function AIAssistant() {
     await dispatch(sendChatMessage(text));
   };
 
-  const reset = () => { setMsg(""); dispatch(resetInteraction()); };
+  const reset = () => {
+    setMsg("");
+    dispatch(resetInteraction());
+  };
 
   return (
     <aside className="assistant-panel">
@@ -129,7 +151,9 @@ export default function AIAssistant() {
       {/* Header */}
       <div className="assistant-header">
         <div className="assistant-brand">
-          <div className="assistant-avatar"><Bot size={17} /></div>
+          <div className="assistant-avatar">
+            <Bot size={17} />
+          </div>
           <div className="assistant-info">
             <div className="assistant-name">AI Assistant</div>
             <div className="assistant-meta">LangGraph · Groq · llama-3.3-70b</div>
@@ -157,16 +181,34 @@ export default function AIAssistant() {
       <div className="chat-area" role="log" aria-live="polite">
 
         <div className="intro-banner">
-          <div className="intro-banner-icon"><Sparkles size={14} /></div>
+          <div className="intro-banner-icon">
+            <Sparkles size={14} />
+          </div>
           <div>
             <strong>AI-first interaction logging</strong>
-            <p>Describe your HCP meeting in plain language. The agent will extract structured data and populate the form automatically.</p>
+            <p>
+              Describe your HCP meeting in plain language. The agent will
+              extract structured data and populate the form automatically.
+            </p>
           </div>
         </div>
 
         {messages.map((m, i) => (
-          <div className={`message-group ${m.role}`} key={`${m.role}-${i}`}>
-            <div className={`chat-bubble ${m.role}`}>{m.content}</div>
+          <div
+            className={`message-group ${m.role}`}
+            key={`${m.role}-${i}`}
+          >
+            {m.role === "assistant" ? (
+              <div className="assistant-msg-row">
+                <div className="assistant-msg-avatar" aria-hidden="true">
+                  <Bot size={12} />
+                </div>
+                <div className="chat-bubble assistant">{m.content}</div>
+              </div>
+            ) : (
+              <div className="chat-bubble user">{m.content}</div>
+            )}
+
             {m.role === "assistant" && m.tool && (
               <ToolResult tool={m.tool} savedId={m.savedInteractionId} />
             )}
@@ -186,7 +228,11 @@ export default function AIAssistant() {
                 <span>Updating form</span>
               </div>
             </div>
-            <div className="typing-dots"><i /><i /><i /></div>
+            <div className="typing-dots">
+              <i />
+              <i />
+              <i />
+            </div>
           </div>
         )}
 
@@ -241,7 +287,11 @@ export default function AIAssistant() {
           placeholder="Describe an HCP interaction or ask for an update…"
           onChange={(e) => setMsg(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !e.nativeEvent.isComposing
+            ) {
               e.preventDefault();
               submit(e);
             }
