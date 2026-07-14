@@ -195,19 +195,21 @@ export default function AIAssistant() {
 
       {/* Quick Actions */}
       <div className="quick-actions">
-        <span className="quick-actions-label">Quick:</span>
-        {QUICK_ACTIONS.map((q) => (
-          <button
-            key={q}
-            className="quick-btn"
-            type="button"
-            disabled={loading}
-            onClick={() => setMsg(q)}
-          >
-            <Plus size={10} />
-            {q}
-          </button>
-        ))}
+        <span className="quick-actions-label">Quick actions</span>
+        <div className="quick-actions-list">
+          {QUICK_ACTIONS.map((q) => (
+            <button
+              key={q}
+              className="quick-btn"
+              type="button"
+              disabled={loading}
+              onClick={() => setMsg(q)}
+            >
+              <Plus size={10} />
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
 
       {voiceErr && (
