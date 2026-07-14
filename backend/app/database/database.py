@@ -16,7 +16,12 @@ if not DATABASE_URL:
 # requires `postgresql+psycopg2://`. Fix it automatically if needed.
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://") and "+psycopg2" not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
+# Debug: log the URL scheme so startup errors are easier to diagnose.
+import sys
+print(f"[startup] DATABASE_URL scheme: {DATABASE_URL.split('://')[0]!r}", file=sys.stderr)
 
 engine = create_engine(
     DATABASE_URL,
