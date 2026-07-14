@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -31,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API routes — registered first so they are never shadowed by the catch-all.
 app.include_router(router)
 
 
@@ -40,11 +41,8 @@ def health_check():
 
 
 # ── Serve the React frontend ──────────────────────────────────────────────────
-# Render runs uvicorn from the repo root via  `cd backend && uvicorn ...`
-# so the working directory when the process starts is <repo>/backend.
-# frontend/dist is therefore one level up.
-_HERE = Path(__file__).resolve().parent          # backend/app
-_REPO_ROOT = _HERE.parents[1]                    # repo root
+_HERE = Path(__file__).resolve().parent   # backend/app
+_REPO_ROOT = _HERE.parents[1]             # repo root
 _FRONTEND_DIST = _REPO_ROOT / "frontend" / "dist"
 
 if _FRONTEND_DIST.is_dir():
@@ -52,12 +50,24 @@ if _FRONTEND_DIST.is_dir():
     if _ASSETS.is_dir():
         app.mount("/assets", StaticFiles(directory=str(_ASSETS)), name="assets")
 
+    # Serve other static files that Vite emits at the root (icons, manifest …)
+    _PUBLIC = StaticFiles(directory=str(_FRONTEND_DIST))
+
     @app.get("/favicon.svg", include_in_schema=False)
     def favicon():
         return FileResponse(str(_FRONTEND_DIST / "favicon.svg"))
 
-    # Catch-all: serve index.html for any path not matched above so that
-    # React client-side routing works correctly.
+    @app.get("/icons.svg", include_in_schema=False)
+    def icons():
+        return FileResponse(str(_FRONTEND_DIST / "icons.svg"))
+
+    # Catch-all: anything that is NOT an /api/* or /health route gets
+    # index.html so React Router handles client-side navigation.
     @app.get("/{full_path:path}", include_in_schema=False)
-    def serve_spa(full_path: str):
-        return FileResponse(str(_FRONTEND_DIST / "index.html"))
+    def serve_spa(full_path: str, request: Request):
+        # Never intercept API calls — return 404 JSON instead of index.html.
+        if full_path.startswith("api/"):
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+        index = _FRONTEND_DIST / "index.html"
+        return FileResponse(str(index))

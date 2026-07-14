@@ -1,8 +1,14 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Mic, Search, Package, Sparkles } from "lucide-react";
+import { updateField } from "../store/interactionSlice";
 
 function InteractionForm() {
+  const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.interaction);
+
+  const handleChange = (field) => (e) => {
+    dispatch(updateField({ field, value: e.target.value }));
+  };
 
   return (
     <section className="interaction-panel">
@@ -15,23 +21,34 @@ function InteractionForm() {
             <input
               value={formData.hcp_name}
               placeholder="Search or select HCP..."
-              readOnly
+              onChange={handleChange("hcp_name")}
             />
           </div>
 
           <div className="field">
             <label>Interaction Type</label>
-            <input value={formData.interaction_type} readOnly />
+            <input
+              value={formData.interaction_type}
+              onChange={handleChange("interaction_type")}
+            />
           </div>
 
           <div className="field">
             <label>Date</label>
-            <input value={formData.interaction_date} readOnly />
+            <input
+              value={formData.interaction_date}
+              onChange={handleChange("interaction_date")}
+              placeholder="YYYY-MM-DD"
+            />
           </div>
 
           <div className="field">
             <label>Time</label>
-            <input value={formData.interaction_time} readOnly />
+            <input
+              value={formData.interaction_time}
+              onChange={handleChange("interaction_time")}
+              placeholder="e.g. 10:00 AM"
+            />
           </div>
         </div>
 
@@ -40,7 +57,7 @@ function InteractionForm() {
           <input
             value={formData.attendees}
             placeholder="Enter names or search..."
-            readOnly
+            onChange={handleChange("attendees")}
           />
         </div>
 
@@ -50,7 +67,7 @@ function InteractionForm() {
             <textarea
               value={formData.topics_discussed}
               placeholder="Enter key discussion points..."
-              readOnly
+              onChange={handleChange("topics_discussed")}
             />
             <Mic size={16} />
           </div>
@@ -66,50 +83,40 @@ function InteractionForm() {
         <div className="material-box">
           <div className="material-row">
             <strong>Materials Shared</strong>
-
             <span className="fake-action">
               <Search size={15} />
               Search/Add
             </span>
           </div>
-
-          <p>
-            {formData.materials_shared || "No materials added."}
-          </p>
+          <p>{formData.materials_shared || "No materials added."}</p>
         </div>
 
         <div className="material-box">
           <div className="material-row">
             <strong>Samples Distributed</strong>
-
             <span className="fake-action">
               <Package size={15} />
               Add Sample
             </span>
           </div>
-
-          <p>
-            {formData.samples_distributed || "No samples added."}
-          </p>
+          <p>{formData.samples_distributed || "No samples added."}</p>
         </div>
 
         <div className="field">
           <label>Observed/Inferred HCP Sentiment</label>
-
           <div className="sentiment-options">
             {["positive", "neutral", "negative"].map((sentiment) => (
               <label key={sentiment}>
                 <input
                   type="radio"
-                  checked={
-                    formData.sentiment?.toLowerCase() === sentiment
+                  name="sentiment"
+                  checked={formData.sentiment?.toLowerCase() === sentiment}
+                  onChange={() =>
+                    dispatch(updateField({ field: "sentiment", value: sentiment }))
                   }
-                  readOnly
                 />
-
                 <span>
-                  {sentiment.charAt(0).toUpperCase() +
-                    sentiment.slice(1)}
+                  {sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
                 </span>
               </label>
             ))}
@@ -121,7 +128,7 @@ function InteractionForm() {
           <textarea
             value={formData.outcomes}
             placeholder="Key outcomes or agreements..."
-            readOnly
+            onChange={handleChange("outcomes")}
           />
         </div>
 
@@ -130,7 +137,7 @@ function InteractionForm() {
           <textarea
             value={formData.follow_up_actions}
             placeholder="Enter next steps or tasks..."
-            readOnly
+            onChange={handleChange("follow_up_actions")}
           />
         </div>
 

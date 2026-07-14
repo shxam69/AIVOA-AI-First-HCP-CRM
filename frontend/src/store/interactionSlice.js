@@ -57,29 +57,32 @@ const interactionSlice = createSlice({
   },
 
   reducers: {
-  resetInteraction: (state) => {
-    state.formData = { ...initialInteraction };
-    state.messages = [
-      {
-        role: "assistant",
-        content:
-          "Ready for a new HCP interaction. Describe your meeting naturally and I’ll structure the CRM details.",
-      },
-    ];
-    state.activeTool = "";
-    state.savedInteractionId = null;
-    state.loading = false;
-    state.error = null;
+    resetInteraction: (state) => {
+      state.formData = { ...initialInteraction };
+      state.messages = [
+        {
+          role: "assistant",
+          content:
+            "Ready for a new HCP interaction. Describe your meeting naturally and I'll structure the CRM details.",
+        },
+      ];
+      state.activeTool = "";
+      state.savedInteractionId = null;
+      state.loading = false;
+      state.error = null;
+    },
+    // Allows direct manual edits in the form fields
+    updateField: (state, action) => {
+      const { field, value } = action.payload;
+      state.formData[field] = value;
+    },
   },
-},
 
   extraReducers: (builder) => {
     builder
-    
       .addCase(sendChatMessage.pending, (state, action) => {
         state.loading = true;
         state.error = null;
-
         state.messages.push({
           role: "user",
           content: action.meta.arg,
@@ -88,28 +91,23 @@ const interactionSlice = createSlice({
 
       .addCase(sendChatMessage.fulfilled, (state, action) => {
         state.loading = false;
-
         state.formData = {
           ...state.formData,
           ...action.payload.interaction,
         };
-
         state.activeTool = action.payload.active_tool;
-        state.savedInteractionId =
-          action.payload.saved_interaction_id;
-
+        state.savedInteractionId = action.payload.saved_interaction_id;
         state.messages.push({
-  role: "assistant",
-  content: action.payload.reply,
-  tool: action.payload.active_tool,
-  savedInteractionId: action.payload.saved_interaction_id,
-});
+          role: "assistant",
+          content: action.payload.reply,
+          tool: action.payload.active_tool,
+          savedInteractionId: action.payload.saved_interaction_id,
+        });
       })
 
       .addCase(sendChatMessage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-
         state.messages.push({
           role: "assistant",
           content:
@@ -120,6 +118,7 @@ const interactionSlice = createSlice({
       });
   },
 });
-export const { resetInteraction } = interactionSlice.actions;
+
+export const { resetInteraction, updateField } = interactionSlice.actions;
 
 export default interactionSlice.reducer;
