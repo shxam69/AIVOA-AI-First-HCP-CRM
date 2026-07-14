@@ -1,414 +1,264 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Bot,
-  CheckCircle2,
-  Database,
-  FileEdit,
-  FilePlus2,
-  Mic,
-  MicOff,
-  PackagePlus,
-  Plus,
-  RotateCcw,
-  Send,
-  Sparkles,
-  WandSparkles,
+  Bot, CheckCircle2, Database, FileEdit, FilePlus2,
+  Mic, MicOff, PackagePlus, Plus, RotateCcw,
+  Send, Sparkles, WandSparkles,
 } from "lucide-react";
+import { resetInteraction, sendChatMessage } from "../store/interactionSlice";
 
-import {
-  resetInteraction,
-  sendChatMessage,
-} from "../store/interactionSlice";
-
-const toolDetails = {
-  log_interaction: {
-    label: "Log Interaction",
-    description: "CRM fields extracted and synchronized",
-    icon: FilePlus2,
-  },
-  edit_interaction: {
-    label: "Edit Interaction",
-    description: "Requested fields updated while preserving state",
-    icon: FileEdit,
-  },
-  add_material: {
-    label: "Add Material",
-    description: "Material added to the current interaction",
-    icon: PackagePlus,
-  },
-  schedule_follow_up: {
-    label: "Schedule Follow-up",
-    description: "Follow-up action structured and scheduled",
-    icon: WandSparkles,
-  },
-  save_interaction: {
-    label: "Save Interaction",
-    description: "Interaction persisted successfully",
-    icon: Database,
-  },
+const TOOL_META = {
+  log_interaction:   { label: "Log Interaction",    desc: "CRM fields extracted and populated",          Icon: FilePlus2   },
+  edit_interaction:  { label: "Edit Interaction",   desc: "Selected fields updated, state preserved",    Icon: FileEdit    },
+  add_material:      { label: "Material Added",     desc: "Item appended to materials list",             Icon: PackagePlus },
+  schedule_follow_up:{ label: "Follow-up Scheduled",desc: "Action structured and dates resolved",        Icon: WandSparkles},
+  save_interaction:  { label: "Interaction Saved",  desc: "Record persisted to the database",            Icon: Database    },
 };
 
-const promptSuggestions = [
+const QUICK_ACTIONS = [
   "Add a clinical study report",
-  "Schedule a follow-up next Monday",
+  "Schedule follow-up next Monday",
   "Save this interaction",
 ];
 
-const MAX_TEXTAREA_HEIGHT = 144;
+const MAX_H = 140;
 
-function ToolExecutionCard({ tool, savedInteractionId }) {
-  const details = toolDetails[tool];
-
-  if (!details) {
-    return null;
-  }
-
-  const Icon = details.icon;
-
+function ToolResult({ tool, savedId }) {
+  const meta = TOOL_META[tool];
+  if (!meta) return null;
+  const { Icon, label, desc } = meta;
   return (
-    <div className="tool-card">
-      <div className="tool-card-icon">
-        <Icon size={17} />
-      </div>
-
-      <div className="tool-card-content">
-        <span className="tool-card-eyebrow">
-          LangGraph Agent
-        </span>
-
-        <strong>{details.label}</strong>
-        <p>{details.description}</p>
-
-        {savedInteractionId && (
-          <div className="save-confirmation">
-            <CheckCircle2 size={14} />
-            Interaction #{savedInteractionId} saved to MySQL
+    <div className="tool-result">
+      <div className="tool-result-icon"><Icon size={14} /></div>
+      <div className="tool-result-body">
+        <div className="tool-result-eyebrow">LangGraph · Tool Executed</div>
+        <div className="tool-result-name">{label}</div>
+        <div className="tool-result-desc">{desc}</div>
+        {savedId && (
+          <div className="tool-result-saved">
+            <CheckCircle2 size={12} />
+            Record #{savedId} saved
           </div>
         )}
       </div>
-
-      <CheckCircle2 className="tool-card-check" size={18} />
+      <CheckCircle2 className="tool-result-check" size={16} />
     </div>
   );
 }
 
-function AIAssistant() {
-  const [message, setMessage] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [voiceSupported, setVoiceSupported] = useState(true);
+export default function AIAssistant() {
+  const [msg, setMsg] = useState("");
+  const [listening, setListening] = useState(false);
+  const [voiceOk, setVoiceOk] = useState(true);
+  const [voiceErr, setVoiceErr] = useState(false);
 
-  const [voiceError, setVoiceError] = useState(false);
-
-  const messagesEndRef = useRef(null);
-  const textareaRef = useRef(null);
-  const recognitionRef = useRef(null);
-  const recognitionActiveRef = useRef(false);
-  const baseMessageRef = useRef("");
+  const bottomRef  = useRef(null);
+  const areaRef    = useRef(null);
+  const recogRef   = useRef(null);
+  const recogActive= useRef(false);
+  const baseMsg    = useRef("");
 
   const dispatch = useDispatch();
+  const { messages, loading } = useSelector((s) => s.interaction);
 
-  const {
-    messages,
-    loading,
-  } = useSelector((state) => state.interaction);
-
-  // Keep chat history scrolled to the latest message.
+  /* scroll to bottom */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Auto-grow the composer textarea as the message changes, and shrink it
-  // back down (e.g. after a send clears the message).
-  const resizeTextarea = () => {
-    const textarea = textareaRef.current;
-
-    if (!textarea) return;
-
-    textarea.style.height = "auto";
-
-    textarea.style.height = `${Math.min(
-      textarea.scrollHeight,
-      MAX_TEXTAREA_HEIGHT
-    )}px`;
-
-    textarea.style.overflowY =
-      textarea.scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
-  };
-
+  /* auto-grow textarea */
   useEffect(() => {
-    resizeTextarea();
-  }, [message]);
+    const el = areaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, MAX_H) + "px";
+    el.style.overflowY = el.scrollHeight > MAX_H ? "auto" : "hidden";
+  }, [msg]);
 
-  // Set up browser speech recognition once on mount.
+  /* speech recognition */
   useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setVoiceOk(false); return; }
 
-    if (!SpeechRecognition) {
-      setVoiceSupported(false);
-      return;
-    }
+    const r = new SR();
+    r.continuous = false; r.interimResults = true; r.lang = "en-IN";
 
-    const recognition = new SpeechRecognition();
-
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = "en-IN";
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setVoiceError(false);
+    r.onstart  = () => { setListening(true);  setVoiceErr(false); };
+    r.onend    = () => { recogActive.current = false; setListening(false); };
+    r.onerror  = (e) => {
+      recogActive.current = false; setListening(false);
+      if (e.error !== "no-speech" && e.error !== "aborted") setVoiceErr(true);
+    };
+    r.onresult = (e) => {
+      let t = "";
+      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      const base = baseMsg.current;
+      setMsg(base + (base && !base.endsWith(" ") ? " " : "") + t);
     };
 
-    recognition.onend = () => {
-      recognitionActiveRef.current = false;
-      setIsListening(false);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      recognitionActiveRef.current = false;
-      setIsListening(false);
-      if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        setVoiceError(true);
-      }
-    };
-
-    recognition.onresult = (event) => {
-      let transcript = "";
-
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-
-      const base = baseMessageRef.current;
-      const separator = base && !base.endsWith(" ") ? " " : "";
-
-      setMessage(`${base}${separator}${transcript}`);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      recognitionActiveRef.current = false;
-      recognition.stop();
-      recognitionRef.current = null;
-    };
+    recogRef.current = r;
+    return () => { recogActive.current = false; r.stop(); recogRef.current = null; };
   }, []);
 
-  const toggleVoiceInput = () => {
-    if (!recognitionRef.current) return;
-
-    if (isListening || recognitionActiveRef.current) {
-      recognitionActiveRef.current = false;
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {
-        console.error("Error stopping recognition:", e);
-      }
+  const toggleMic = () => {
+    if (!recogRef.current) return;
+    if (listening || recogActive.current) {
+      recogActive.current = false;
+      try { recogRef.current.stop(); } catch {}
     } else {
-      baseMessageRef.current = message;
-      recognitionActiveRef.current = true;
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error("Error starting recognition:", e);
-        recognitionActiveRef.current = false;
-        setIsListening(false);
-        setVoiceError(true);
-      }
+      baseMsg.current = msg;
+      recogActive.current = true;
+      try { recogRef.current.start(); }
+      catch { recogActive.current = false; setListening(false); setVoiceErr(true); }
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!message.trim() || loading) {
-      return;
-    }
-
-    const currentMessage = message;
-    setMessage("");
-
-    await dispatch(sendChatMessage(currentMessage));
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!msg.trim() || loading) return;
+    const text = msg;
+    setMsg("");
+    await dispatch(sendChatMessage(text));
   };
 
-  const handleReset = () => {
-    setMessage("");
-    dispatch(resetInteraction());
-  };
+  const reset = () => { setMsg(""); dispatch(resetInteraction()); };
 
   return (
     <aside className="assistant-panel">
-      <div className="assistant-header enhanced-header">
-        <div className="assistant-title">
-          <div className="assistant-avatar">
-            <Bot size={20} />
-          </div>
 
-          <div>
-            <div className="assistant-heading-row">
-              <h2>AI Assistant</h2>
-              <span className="ai-status">
-                <span className="status-dot" />
-                Online
-              </span>
-            </div>
-
-            <p>Powered by LangGraph + Groq</p>
+      {/* Header */}
+      <div className="assistant-header">
+        <div className="assistant-brand">
+          <div className="assistant-avatar"><Bot size={17} /></div>
+          <div className="assistant-info">
+            <div className="assistant-name">AI Assistant</div>
+            <div className="assistant-meta">LangGraph · Groq · llama-3.3-70b</div>
           </div>
         </div>
-
-        <button
-          className="new-interaction-button"
-          type="button"
-          onClick={handleReset}
-          disabled={loading}
-          title="Start new interaction"
-        >
-          <RotateCcw size={15} />
-          New
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="online-badge">
+            <span className="online-dot" />
+            Online
+          </span>
+          <button
+            className="btn-ghost"
+            type="button"
+            onClick={reset}
+            disabled={loading}
+            title="New interaction"
+          >
+            <RotateCcw size={12} />
+            New
+          </button>
+        </div>
       </div>
 
+      {/* Chat */}
       <div className="chat-area" role="log" aria-live="polite">
-        <div className="assistant-intro">
-          <div className="intro-icon">
-            <Sparkles size={18} />
-          </div>
 
+        <div className="intro-banner">
+          <div className="intro-banner-icon"><Sparkles size={14} /></div>
           <div>
             <strong>AI-first interaction logging</strong>
-            <p>
-              Describe your HCP meeting naturally. I’ll select the
-              appropriate agent tool and synchronize the CRM form.
-            </p>
+            <p>Describe your HCP meeting in plain language. The agent will extract structured data and populate the form automatically.</p>
           </div>
         </div>
 
-        {messages.map((chatMessage, index) => (
-          <div
-            className={`message-group ${chatMessage.role}`}
-            key={`${chatMessage.role}-${index}`}
-          >
-            <div className={`chat-message ${chatMessage.role}`}>
-              {chatMessage.content}
-            </div>
-
-            {chatMessage.role === "assistant" && chatMessage.tool && (
-              <ToolExecutionCard
-                tool={chatMessage.tool}
-                savedInteractionId={chatMessage.savedInteractionId}
-              />
+        {messages.map((m, i) => (
+          <div className={`message-group ${m.role}`} key={`${m.role}-${i}`}>
+            <div className={`chat-bubble ${m.role}`}>{m.content}</div>
+            {m.role === "assistant" && m.tool && (
+              <ToolResult tool={m.tool} savedId={m.savedInteractionId} />
             )}
           </div>
         ))}
 
         {loading && (
-          <div className="agent-processing-card">
-            <div className="processing-icon">
-              <Sparkles size={17} />
-            </div>
-
-            <div>
-              <strong>LangGraph Agent is working</strong>
-
-              <div className="processing-stages">
-                <span>Understanding request</span>
-                <span>•</span>
+          <div className="thinking-card">
+            <div className="thinking-spinner" />
+            <div className="thinking-text">
+              <strong>Agent is processing…</strong>
+              <div className="thinking-stages">
+                <span>Parsing request</span>
+                <span>·</span>
                 <span>Selecting tool</span>
-                <span>•</span>
-                <span>Updating CRM</span>
+                <span>·</span>
+                <span>Updating form</span>
               </div>
             </div>
-
-            <div className="typing-dots">
-              <i />
-              <i />
-              <i />
-            </div>
+            <div className="typing-dots"><i /><i /><i /></div>
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={bottomRef} />
       </div>
 
-      <div className="prompt-suggestions">
-        <span className="suggestion-label">Quick actions</span>
-
-        <div className="suggestion-list">
-          {promptSuggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              disabled={loading}
-              onClick={() => setMessage(suggestion)}
-            >
-              <Plus size={12} />
-              {suggestion}
-            </button>
-          ))}
-        </div>
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <span className="quick-actions-label">Quick:</span>
+        {QUICK_ACTIONS.map((q) => (
+          <button
+            key={q}
+            className="quick-btn"
+            type="button"
+            disabled={loading}
+            onClick={() => setMsg(q)}
+          >
+            <Plus size={10} />
+            {q}
+          </button>
+        ))}
       </div>
 
-      {voiceError && (
-        <div style={{ color: "#ef4444", fontSize: "11px", padding: "8px 18px 0", textAlign: "center" }}>
-          Voice input is unavailable in this browser. Please use Chrome or Edge.
+      {voiceErr && (
+        <div className="voice-error-msg">
+          Voice input unavailable — use Chrome or Edge.
         </div>
       )}
 
-      <form className="chat-input-area enhanced-input" onSubmit={handleSubmit}>
-        {voiceSupported && (
+      {/* Composer */}
+      <form className="composer" onSubmit={submit}>
+        {voiceOk && (
           <button
             type="button"
-            className={`mic-button ${isListening ? "listening" : ""}`}
-            onClick={toggleVoiceInput}
+            className={`mic-btn${listening ? " active" : ""}`}
+            onClick={toggleMic}
             disabled={loading}
-            title={isListening ? "Stop voice input" : "Start voice input"}
-            aria-label={isListening ? "Stop voice input" : "Start voice input"}
-            aria-pressed={isListening}
+            aria-label={listening ? "Stop voice input" : "Start voice input"}
+            aria-pressed={listening}
           >
-            {isListening ? <MicOff size={17} /> : <Mic size={17} />}
+            {listening ? <MicOff size={15} /> : <Mic size={15} />}
           </button>
         )}
-
         <textarea
-          ref={textareaRef}
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          placeholder="Describe an HCP interaction or request an update..."
-          rows="1"
+          ref={areaRef}
+          className="composer-textarea"
+          value={msg}
+          rows={1}
           disabled={loading}
-          onKeyDown={(event) => {
-            if (
-              event.key === "Enter" &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
-              event.preventDefault();
-              handleSubmit(event);
+          placeholder="Describe an HCP interaction or ask for an update…"
+          onChange={(e) => setMsg(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              submit(e);
             }
           }}
         />
-
         <button
-          className="send-button"
           type="submit"
-          disabled={loading || !message.trim()}
+          className="send-btn"
+          disabled={loading || !msg.trim()}
+          aria-label="Send message"
         >
-          {loading ? <Sparkles size={17} /> : <Send size={17} />}
+          {loading ? <Sparkles size={15} /> : <Send size={15} />}
         </button>
       </form>
 
-      <div className="assistant-footer">
-        <Sparkles size={11} />
-        AI-generated CRM updates remain visible for review before saving
+      <div className="chat-footer">
+        <Sparkles size={10} />
+        AI-generated updates are previewed in the form before saving
       </div>
     </aside>
   );
 }
-
-export default AIAssistant;

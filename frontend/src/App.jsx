@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun, Activity } from "lucide-react";
+import { Moon, Sun, Activity, Zap } from "lucide-react";
 import "./App.css";
-
 import InteractionForm from "./components/InteractionForm";
 import AIAssistant from "./components/AIAssistant";
 
 function App() {
   const [theme, setTheme] = useState(
-    () => localStorage.getItem("aivoa-theme") || "dark"
+    () => localStorage.getItem("aivoa-theme") || "light"
   );
 
   useEffect(() => {
@@ -19,44 +18,47 @@ function App() {
     setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   return (
-    <main className="app-shell">
-      <header className="app-header">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            display: "grid", placeItems: "center",
-            width: 36, height: 36, borderRadius: 10,
-            background: "var(--accent-soft)",
-            border: "1px solid var(--accent-glow)",
-            color: "var(--accent)", flexShrink: 0,
-          }}>
-            <Activity size={17} />
+    <div className="app-shell">
+      {/* Top Navigation Bar */}
+      <nav className="navbar">
+        <div className="navbar-brand">
+          <div className="navbar-logo">
+            <Activity size={16} />
           </div>
-          <div>
-            <h1>AIVOA HCP CRM</h1>
-            <p>AI-first healthcare professional interaction management</p>
+          <div className="navbar-brand-text">
+            <span className="navbar-title">AIVOA</span>
+            <span className="navbar-subtitle">HCP CRM Platform</span>
           </div>
+          <div className="navbar-divider" />
+          <span className="navbar-tag">
+            <Zap size={10} />
+            AI-First
+          </span>
         </div>
 
-        <button
-          className="theme-toggle"
-          type="button"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-          title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-        >
-          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-      </header>
+        <div className="navbar-actions">
+          <button
+            className="btn-icon"
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+        </div>
+      </nav>
 
-      <section className="workspace">
+      {/* Main Body */}
+      <div className="app-body">
         <div className="form-column">
           <InteractionForm />
         </div>
         <div className="assistant-column">
           <AIAssistant />
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
 
