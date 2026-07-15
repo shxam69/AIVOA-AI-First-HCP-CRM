@@ -27,6 +27,23 @@ function InteractionForm() {
 
   return (
     <div>
+      <div className="ai-controlled-banner" style={{
+        padding: '10px 14px',
+        marginBottom: '16px',
+        backgroundColor: 'var(--brand-light)',
+        border: '1px solid var(--brand-ring)',
+        borderRadius: 'var(--radius-md)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '12px',
+        color: 'var(--brand)',
+        fontWeight: 600
+      }}>
+        <Sparkles size={14} />
+        <span>AI-controlled · Use the assistant to make changes</span>
+      </div>
+
       {/* ── Section 1: HCP Info ── */}
       <div className="form-section">
         <div className="section-header">
@@ -52,6 +69,7 @@ function InteractionForm() {
                   value={formData.hcp_name}
                   placeholder="e.g. Dr. Ananya Rao"
                   onChange={set("hcp_name")}
+                  readOnly
                 />
               </div>
             </div>
@@ -62,6 +80,7 @@ function InteractionForm() {
                 value={formData.interaction_type}
                 placeholder="Meeting / Call / Email"
                 onChange={set("interaction_type")}
+                readOnly
               />
             </div>
           </div>
@@ -76,6 +95,7 @@ function InteractionForm() {
                   value={formData.interaction_date}
                   placeholder="YYYY-MM-DD"
                   onChange={set("interaction_date")}
+                  readOnly
                 />
               </div>
             </div>
@@ -88,6 +108,7 @@ function InteractionForm() {
                   value={formData.interaction_time}
                   placeholder="e.g. 10:00 AM"
                   onChange={set("interaction_time")}
+                  readOnly
                 />
               </div>
             </div>
@@ -102,6 +123,7 @@ function InteractionForm() {
                 value={formData.attendees}
                 placeholder="Names separated by commas"
                 onChange={set("attendees")}
+                readOnly
               />
             </div>
           </div>
@@ -130,6 +152,7 @@ function InteractionForm() {
               value={formData.topics_discussed}
               placeholder="Key topics, products, or clinical data discussed…"
               onChange={set("topics_discussed")}
+              readOnly
             />
           </div>
 
@@ -145,6 +168,7 @@ function InteractionForm() {
               value={formData.outcomes}
               placeholder="Agreements reached, decisions made, next steps agreed…"
               onChange={set("outcomes")}
+              readOnly
             />
           </div>
 
@@ -171,6 +195,7 @@ function InteractionForm() {
                     name="sentiment"
                     checked={formData.sentiment?.toLowerCase() === value}
                     onChange={() => setSentiment(value)}
+                    disabled
                   />
                   <span className="sentiment-indicator" />
                   {label}
@@ -256,6 +281,7 @@ function InteractionForm() {
               value={formData.follow_up_actions}
               placeholder="Scheduled meetings, tasks, or commitments made…"
               onChange={set("follow_up_actions")}
+              readOnly
             />
           </div>
 

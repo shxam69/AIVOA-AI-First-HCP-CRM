@@ -152,7 +152,23 @@ def tool_node(state: AgentState) -> Dict[str, Any]:
                     if re.search(r"\d{4}-\d{2}-\d{2}", current_action):
                         current_action = re.sub(r"\d{4}-\d{2}-\d{2}", correct_date, current_action)
                     else:
-                        current_action = resolve_relative_weekday(current_action)
+                        lower_action = current_action.lower()
+                        replaced = False
+                        
+                        for phrase in ["tomorrow", "today"]:
+                            if phrase in lower_action:
+                                current_action = re.sub(phrase, correct_date, current_action, flags=re.IGNORECASE)
+                                replaced = True
+                        
+                        if not replaced:
+                            for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
+                                for prefix in ["next ", "this ", "upcoming "]:
+                                    if (prefix + day) in lower_action:
+                                        current_action = re.sub(prefix + day, correct_date, current_action, flags=re.IGNORECASE)
+                                        replaced = True
+                                        
+                        if not replaced:
+                            current_action = f"{current_action} on {correct_date}"
                         
                     tool_args["follow_up_actions"] = current_action
         

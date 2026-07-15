@@ -40,13 +40,32 @@ def resolve_relative_weekday(text: str) -> str:
         changed = True
 
     for weekday_name, target_weekday in WEEKDAYS.items():
-        phrase = f"next {weekday_name}"
-        if phrase in resolved_text:
+        # "this <weekday>"
+        phrase_this = f"this {weekday_name}"
+        if phrase_this in resolved_text:
+            current_monday = today - timedelta(days=today.weekday())
+            resolved_date = current_monday + timedelta(days=target_weekday)
+            resolved_text = resolved_text.replace(phrase_this, resolved_date.isoformat())
+            changed = True
+
+        # "next <weekday>"
+        phrase_next = f"next {weekday_name}"
+        if phrase_next in resolved_text:
             days_ahead = (target_weekday - today.weekday()) % 7
             if days_ahead == 0:
                 days_ahead = 7
             resolved_date = today + timedelta(days=days_ahead)
-            resolved_text = resolved_text.replace(phrase, resolved_date.isoformat())
+            resolved_text = resolved_text.replace(phrase_next, resolved_date.isoformat())
+            changed = True
+
+        # "upcoming <weekday>"
+        phrase_upcoming = f"upcoming {weekday_name}"
+        if phrase_upcoming in resolved_text:
+            days_ahead = (target_weekday - today.weekday()) % 7
+            if days_ahead == 0:
+                days_ahead = 7
+            resolved_date = today + timedelta(days=days_ahead)
+            resolved_text = resolved_text.replace(phrase_upcoming, resolved_date.isoformat())
             changed = True
 
     return resolved_text if changed else text
