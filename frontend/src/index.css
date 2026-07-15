@@ -867,7 +867,7 @@ a { color: var(--brand); text-decoration: none; }
 @media (max-width: 640px) {
   body { overflow: hidden; }
 
-  /* Full-screen app shell with bottom nav */
+  /* Full-screen shell */
   .app-shell {
     flex-direction: column;
     height: 100dvh;
@@ -875,10 +875,10 @@ a { color: var(--brand); text-decoration: none; }
     overflow: hidden;
   }
 
-  /* Hide desktop sidebar entirely */
+  /* Hide desktop sidebar */
   .sidebar { display: none; }
 
-  /* Mobile header */
+  /* Mobile branded header */
   .mobile-header {
     display: flex !important;
     align-items: center;
@@ -889,6 +889,7 @@ a { color: var(--brand); text-decoration: none; }
     background: linear-gradient(135deg, var(--sb-bg), var(--sb-bg-end));
     border-bottom: 1px solid var(--sb-border);
     z-index: 30;
+    width: 100%;
   }
   .mobile-header-brand {
     display: flex;
@@ -923,13 +924,13 @@ a { color: var(--brand); text-decoration: none; }
     border-radius: 8px;
     border: 1px solid var(--sb-border);
     color: var(--sb-text-2);
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.06);
   }
   .mobile-save-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 0 12px;
+    padding: 0 14px;
     height: 32px;
     border-radius: 8px;
     background: var(--brand);
@@ -937,17 +938,29 @@ a { color: var(--brand); text-decoration: none; }
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.35);
   }
 
-  /* Hide desktop top-bar */
+  /* Desktop top-bar hidden */
   .top-bar { display: none; }
+
+  /* Main area fills remaining height, stacks header → tabs → body */
+  .main-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+  }
 
   /* Tab switcher */
   .mobile-tabs {
     display: flex !important;
-    flex: 0 0 42px;
+    flex: 0 0 44px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-surface);
+    width: 100%;
   }
   .mobile-tab {
     flex: 1;
@@ -959,61 +972,90 @@ a { color: var(--brand); text-decoration: none; }
     font-weight: 600;
     color: var(--text-tertiary);
     border-bottom: 2px solid transparent;
-    padding: 0 8px;
+    margin-bottom: -1px;
     transition: all var(--transition);
     background: none;
+    padding: 0;
   }
   .mobile-tab.active {
     color: var(--brand);
     border-bottom-color: var(--brand);
   }
 
-  /* Main body becomes a single-panel switcher */
-  .main-area { flex: none; width: 100%; display: contents; }
+  /* App body fills remaining space */
   .app-body {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    flex-direction: row;
+    position: relative;
+    display: block;
+    width: 100%;
   }
 
-  /* Each column takes full screen, hidden unless active */
+  /* Each panel fills the body absolutely */
   .form-column {
-    flex: 0 0 100%;
-    width: 100%;
+    position: absolute;
+    inset: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 14px;
     border-right: none;
     border-bottom: none;
+    background: var(--bg);
     display: none;
+    -webkit-overflow-scrolling: touch;
   }
   .form-column.active { display: block; }
 
   .assistant-column {
-    flex: 0 0 100%;
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     display: none;
+    flex-direction: column;
   }
   .assistant-column.active { display: flex; }
 
-  /* Form tweaks */
+  /* ── Form adjustments ── */
   .form-row { grid-template-columns: 1fr; }
-  .form-section { margin-bottom: 14px; border-radius: var(--radius-md); }
+  .form-section { margin-bottom: 12px; border-radius: var(--radius-md); }
   .section-body { padding: 12px 14px; }
   .section-header { padding: 11px 14px 10px; }
-  .field-input { height: 44px; font-size: 16px; } /* 16px prevents iOS zoom */
-  .field-textarea { font-size: 16px; }
+
+  /* 16px minimum prevents iOS Safari auto-zoom on focus */
+  .field-input  { height: 44px; font-size: 16px; }
+  .field-textarea { font-size: 16px; min-height: 88px; }
+  .field-label { font-size: 13px; }
+
   .sentiment-group { gap: 6px; }
-  .sentiment-btn { padding: 10px 8px; font-size: 12px; }
-  .material-card-action { display: none; } /* too cramped on small screens */
+  .sentiment-btn { padding: 10px 6px; font-size: 12px; gap: 5px; }
+  .sentiment-indicator { width: 7px; height: 7px; }
+  .material-card-action { display: none; }
+  .voice-btn { width: 100%; justify-content: center; }
+
+  /* ── Chat adjustments ── */
+  .assistant-panel { border-left: none; border-radius: 0; }
+  .assistant-header { height: 52px; flex: 0 0 52px; padding: 0 14px; }
+  .assistant-name { font-size: 14px; }
+
+  .chat-area { padding: 14px 12px 8px; }
+  .chat-bubble { max-width: 92%; font-size: 14px; padding: 10px 13px; }
+  .tool-result { max-width: 96%; }
+
+  .quick-actions { padding: 8px 14px; }
+  .quick-actions-list { gap: 5px; }
+  .quick-btn { font-size: 12px; padding: 6px 12px; }
+
+  .composer { padding: 8px 12px 12px; gap: 8px; }
+  .composer-textarea { font-size: 16px; min-height: 44px; }
+  .mic-btn { width: 44px; height: 44px; flex: 0 0 44px; }
+  .send-btn { width: 44px; height: 44px; flex: 0 0 44px; }
+
+  .chat-footer { display: none; } /* reclaim space on small screens */
   .thinking-stages { display: none; }
 
-  /* Chat tweaks */
-  .assistant-panel { border-left: none; border-radius: 0; }
-  .chat-bubble { max-width: 90%; font-size: 14px; }
-  .composer { padding: 8px 12px 10px; }
-  .composer-textarea { font-size: 16px; } /* prevent iOS zoom */
-  .quick-actions { padding: 8px 12px; }
-  .chat-footer { padding: 4px 12px 6px; }
+  /* intro banner more compact */
+  .intro-banner { padding: 10px 12px; margin-bottom: 12px; }
+  .intro-banner p { font-size: 12px; }
 }
