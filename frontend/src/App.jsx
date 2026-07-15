@@ -7,6 +7,7 @@ import {
 import "./App.css";
 import InteractionForm from "./components/InteractionForm";
 import AIAssistant from "./components/AIAssistant";
+import HistoryView from "./components/HistoryView";
 import { sendChatMessage } from "./store/interactionSlice";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
 
   // "form" | "chat"
   const [mobileTab, setMobileTab] = useState("form");
+  const [activeView, setActiveView] = useState("log");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -69,12 +71,20 @@ function App() {
 
         <nav className="sidebar-nav" aria-label="Main navigation">
           <span className="sidebar-nav-label">Workspace</span>
-          <button type="button" className="nav-item active">
+          <button 
+            type="button" 
+            className={`nav-item ${activeView === "log" ? "active" : ""}`}
+            onClick={() => setActiveView("log")}
+          >
             <span className="nav-item-icon"><ClipboardList size={15} /></span>
             Log Interaction
             <span className="nav-item-badge">1</span>
           </button>
-          <button type="button" className="nav-item disabled" disabled>
+          <button 
+            type="button" 
+            className={`nav-item ${activeView === "history" ? "active" : ""}`}
+            onClick={() => setActiveView("history")}
+          >
             <span className="nav-item-icon"><History size={15} /></span>
             History
           </button>
@@ -109,7 +119,7 @@ function App() {
 
         {/* Desktop top bar */}
         <div className="top-bar">
-          <span className="top-bar-title">Log Interaction</span>
+          <span className="top-bar-title">{activeView === "log" ? "Log Interaction" : "Interaction History"}</span>
           <div className="top-bar-divider" />
           <span className="draft-badge">
             <span className="draft-badge-dot" />
@@ -146,12 +156,20 @@ function App() {
 
         {/* Body */}
         <div className="app-body">
-          <div className={`form-column${mobileTab === "form" ? " active" : ""}`}>
-            <InteractionForm />
-          </div>
-          <div className={`assistant-column${mobileTab === "chat" ? " active" : ""}`}>
-            <AIAssistant />
-          </div>
+          {activeView === "log" ? (
+            <>
+              <div className={`form-column${mobileTab === "form" ? " active" : ""}`}>
+                <InteractionForm />
+              </div>
+              <div className={`assistant-column${mobileTab === "chat" ? " active" : ""}`}>
+                <AIAssistant />
+              </div>
+            </>
+          ) : (
+            <div className="history-column active" style={{ width: '100%', height: '100%', overflowY: 'auto' }}>
+              <HistoryView />
+            </div>
+          )}
         </div>
 
       </div>
