@@ -137,40 +137,82 @@ def tool_node(state: AgentState) -> Dict[str, Any]:
             )
             tool_args = complete_data
 
+        # Deterministic date resolution for interaction_date
+        if "interaction_date" in tool_args and tool_args["interaction_date"]:
+            original_message = _latest_human_message(state["messages"]).lower()
+            follow_up_text = tool_args.get("follow_up_actions", "").lower() if tool_args.get("follow_up_actions") else ""
+            
+            from datetime import date, timedelta
+            today = date.today()
+            interaction_date_str = None
+            
+            def is_interaction(phrase):
+                return phrase in original_message and phrase not in follow_up_text
+                
+            if is_interaction("yesterday"):
+                interaction_date_str = (today - timedelta(days=1)).isoformat()
+            elif is_interaction("today"):
+                interaction_date_str = today.isoformat()
+            else:
+                for w_name, w_idx in [("monday", 0), ("tuesday", 1), ("wednesday", 2), ("thursday", 3), ("friday", 4), ("saturday", 5), ("sunday", 6)]:
+                    if is_interaction(f"last {w_name}"):
+                        days_behind = (today.weekday() - w_idx) % 7
+                        if days_behind == 0: days_behind = 7
+                        interaction_date_str = (today - timedelta(days=days_behind)).isoformat()
+                        break
+                    elif is_interaction(f"this {w_name}"):
+                        current_monday = today - timedelta(days=today.weekday())
+                        interaction_date_str = (current_monday + timedelta(days=w_idx)).isoformat()
+                        break
+                        
+            if interaction_date_str:
+                tool_args["interaction_date"] = interaction_date_str
+
         # Deterministic date resolution for follow-up actions
         if "follow_up_actions" in tool_args and tool_args["follow_up_actions"]:
-            original_message = _latest_human_message(state["messages"])
-            resolved_msg = resolve_relative_weekday(original_message)
+            original_message = _latest_human_message(state["messages"]).lower()
+            current_action = tool_args["follow_up_actions"]
+            
+            from datetime import date, timedelta
+            today = date.today()
+            follow_up_date_str = None
+            
+            if "tomorrow" in original_message:
+                follow_up_date_str = (today + timedelta(days=1)).isoformat()
+            else:
+                for w_name, w_idx in [("monday", 0), ("tuesday", 1), ("wednesday", 2), ("thursday", 3), ("friday", 4), ("saturday", 5), ("sunday", 6)]:
+                    if f"next {w_name}" in original_message or f"upcoming {w_name}" in original_message:
+                        days_ahead = (w_idx - today.weekday()) % 7
+                        if days_ahead == 0: days_ahead = 7
+                        follow_up_date_str = (today + timedelta(days=days_ahead)).isoformat()
+                        break
+                    elif f"this {w_name}" in original_message and f"this {w_name}" in current_action.lower():
+                        current_monday = today - timedelta(days=today.weekday())
+                        follow_up_date_str = (current_monday + timedelta(days=w_idx)).isoformat()
+                        break
 
-            if resolved_msg != original_message:
+            if follow_up_date_str:
                 import re
-                resolved_dates = re.findall(r"\d{4}-\d{2}-\d{2}", resolved_msg)
-                if resolved_dates:
-                    correct_date = max(resolved_dates)
-                    current_action = tool_args["follow_up_actions"]
-                    
-                    if re.search(r"\d{4}-\d{2}-\d{2}", current_action):
-                        current_action = re.sub(r"\d{4}-\d{2}-\d{2}", correct_date, current_action)
-                    else:
-                        lower_action = current_action.lower()
-                        replaced = False
-                        
-                        for phrase in ["tomorrow", "today"]:
-                            if phrase in lower_action:
-                                current_action = re.sub(phrase, correct_date, current_action, flags=re.IGNORECASE)
-                                replaced = True
-                        
-                        if not replaced:
-                            for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
-                                for prefix in ["next ", "this ", "upcoming "]:
-                                    if (prefix + day) in lower_action:
-                                        current_action = re.sub(prefix + day, correct_date, current_action, flags=re.IGNORECASE)
-                                        replaced = True
+                if re.search(r"\d{4}-\d{2}-\d{2}", current_action):
+                    current_action = re.sub(r"\d{4}-\d{2}-\d{2}", follow_up_date_str, current_action)
+                else:
+                    lower_action = current_action.lower()
+                    replaced = False
+                    for phrase in ["tomorrow"]:
+                        if phrase in lower_action:
+                            current_action = re.sub(phrase, follow_up_date_str, current_action, flags=re.IGNORECASE)
+                            replaced = True
+                    if not replaced:
+                        for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
+                            for prefix in ["next ", "this ", "upcoming "]:
+                                if (prefix + day) in lower_action:
+                                    current_action = re.sub(prefix + day, follow_up_date_str, current_action, flags=re.IGNORECASE)
+                                    replaced = True
                                         
-                        if not replaced:
-                            current_action = f"{current_action} on {correct_date}"
+                    if not replaced:
+                        current_action = f"{current_action} on {follow_up_date_str}"
                         
-                    tool_args["follow_up_actions"] = current_action
+                tool_args["follow_up_actions"] = current_action
         
 
         selected_tool = tools_by_name[tool_name]

@@ -40,6 +40,16 @@ def resolve_relative_weekday(text: str) -> str:
         changed = True
 
     for weekday_name, target_weekday in WEEKDAYS.items():
+        # "last <weekday>"
+        phrase_last = f"last {weekday_name}"
+        if phrase_last in resolved_text:
+            days_behind = (today.weekday() - target_weekday) % 7
+            if days_behind == 0:
+                days_behind = 7
+            resolved_date = today - timedelta(days=days_behind)
+            resolved_text = resolved_text.replace(phrase_last, resolved_date.isoformat())
+            changed = True
+
         # "this <weekday>"
         phrase_this = f"this {weekday_name}"
         if phrase_this in resolved_text:
