@@ -198,7 +198,7 @@ MySQL Database
 > MySQL
 
 >>> AI Agent Workflow <<<
-```
+``
 Natural-language request
         |
         v
