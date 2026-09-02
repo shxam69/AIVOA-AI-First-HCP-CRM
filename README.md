@@ -162,6 +162,7 @@ MySQL Database
 ```
 
 ##Tech Stack
+```
 
 >>>>> Frontend <<<<<
 
